@@ -1,0 +1,11 @@
+dependencies:
+  gnu.org/coreutils: '*'
+  terraform.io: '*'
+  taskfile.dev: '*'
+  gnu.org/bash: '^5'
+env:
+  OS_CLOUD: openstack
+  TF_OS_CLOUD: $OS_CLOUD
+  TF_VAR_BASE_IMAGE: 'ubuntu-2204.amd64-genericcloud.20230712'
+  TF_VAR_FLAVOR_NAME: 'vd.1'
+  TF_VAR_KEYPAIR_NAME: jupytercloud-2023-12

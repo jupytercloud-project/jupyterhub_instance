@@ -1,0 +1,46 @@
+version: '3'
+
+tasks:
+  default:
+    desc: list tasks
+    silent: true
+    cmds:
+    - task --list 
+
+  deploy:
+    desc: deploy infrastructures (add "-- -auto-approve" to run)
+    cmds:
+    - |
+      pkgx +gnu.org/coreutils env \
+           --split-string \
+           --ignore-environment \
+           USER="${USER}" \
+           HOME="${HOME}" \
+           PATH="${HOME}/.pkgx/bin:/bin:/usr/bin:/usr/local/bin" \
+           pkgx +gnu.org/bash^5 bash \
+                --login \
+                --noprofile \
+                --norc \
+                - <<'EOF'
+        eval "$(pkgx --shellcode)"
+        terraform apply {{ .CLI_ARGS }}
+      EOF
+
+  destroy:
+    desc: destroy infrastructures (add "-- -auto-approve" to run)
+    cmds:
+    - |
+      pkgx +gnu.org/coreutils env \
+           --split-string \
+           --ignore-environment \
+           USER="${USER}" \
+           HOME="${HOME}" \
+           PATH="${HOME}/.pkgx/bin:/bin:/usr/bin:/usr/local/bin" \
+           pkgx +gnu.org/bash^5 bash \
+                --login \
+                --noprofile \
+                --norc \
+                - <<'EOF'
+        eval "$(pkgx --shellcode)"
+        terraform destroy  {{ .CLI_ARGS }}
+      EOF

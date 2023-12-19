@@ -1,0 +1,6 @@
+clouds.yml
+.terraform.lock.hcl
+clouds.yaml
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
