@@ -1,46 +1,67 @@
 version: '3'
 
+dotenv:
+  - Taskfile.env
+
+includes:
+  constructor:
+    taskfile: constructor/Taskfile.yml
+    dir: constructor
+    optional: true
+  provisioner:
+    taskfile: provisioner/Taskfile.yml
+    dir: provisioner
+    optional: true
+
+
 tasks:
+  git_clone_if_not_exist:
+    vars:
+      REPO_URL: '{{.REPO_URL}}'
+      REPO_BRANCH: '{{.REPO_BRANCH}}'
+      REPO_DIR: '{{.REPO_DIR}}'
+    status:
+    - test -d "{{.REPO_DIR}}"
+    cmds:
+    - git clone --progress
+                --verbose
+                --single-branch
+                --branch '{{.REPO_BRANCH}}'
+                '{{.REPO_URL}}'
+                '{{.REPO_DIR}}'
+
+  git_checkout_or_pull:
+    deps:
+    - task: git_clone_if_not_exist
+      vars:
+        REPO_URL: '{{.REPO_URL}}'
+        REPO_BRANCH: '{{.REPO_BRANCH}}'
+        REPO_DIR: '{{.REPO_DIR}}'
+    vars:
+      REPO_DIR: '{{.REPO_DIR}}'
+      REPO_TAG: '{{.REPO_TAG}}'
+    cmds:
+    - cd '{{.REPO_DIR}}' &&
+      {{if eq .REPO_TAG ""}}
+        git pull
+      {{else}}
+        git checkout tags/{{.REPO_TAG}}
+      {{end}}
+
   default:
     desc: list tasks
     silent: true
     cmds:
     - task --list 
+  
 
-  deploy:
-    desc: deploy infrastructures (add "-- -auto-approve" to run)
-    cmds:
-    - |
-      pkgx +gnu.org/coreutils env \
-           --split-string \
-           --ignore-environment \
-           USER="${USER}" \
-           HOME="${HOME}" \
-           PATH="${HOME}/.pkgx/bin:/bin:/usr/bin:/usr/local/bin" \
-           pkgx +gnu.org/bash^5 bash \
-                --login \
-                --noprofile \
-                --norc \
-                - <<'EOF'
-        eval "$(pkgx --shellcode)"
-        terraform apply {{ .CLI_ARGS }}
-      EOF
+  init:
+    desc: init workspace (for provisioner tests)
+    deps:
+    - task: git_checkout_or_pull
+      vars:
+        REPO_URL: '{{.PROVISIONER_REPO_URL}}'
+        REPO_BRANCH: '{{.PROVISIONER_REPO_BRANCH}}'
+        REPO_TAG: '{{.PROVISIONER_REPO_TAG}}'
+        REPO_DIR: 'provisioner'
 
-  destroy:
-    desc: destroy infrastructures (add "-- -auto-approve" to run)
-    cmds:
-    - |
-      pkgx +gnu.org/coreutils env \
-           --split-string \
-           --ignore-environment \
-           USER="${USER}" \
-           HOME="${HOME}" \
-           PATH="${HOME}/.pkgx/bin:/bin:/usr/bin:/usr/local/bin" \
-           pkgx +gnu.org/bash^5 bash \
-                --login \
-                --noprofile \
-                --norc \
-                - <<'EOF'
-        eval "$(pkgx --shellcode)"
-        terraform destroy  {{ .CLI_ARGS }}
-      EOF

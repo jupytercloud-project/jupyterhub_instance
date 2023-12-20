@@ -1,0 +1,16 @@
+locals {
+  #MODULE_PATH             = path.module
+  #TIMEZONE                = var.TIMEZONE
+  #NTP_SERVERS             = jsondecode(var.NTP_SERVERS)
+  #INSTANCE_FLAVOR         = var.INSTANCE_FLAVOR
+  #INSTANCE_FQDN           = var.INSTANCE_FQDN
+  #INSTANCE_ROLE           = var.INSTANCE_ROLE
+  #SYSTEM_IMAGE            = var.SYSTEM_IMAGE
+  #SYSTEM_VOLUME_SIZE      = var.SYSTEM_VOLUME_SIZE
+  PERSISTENT_VOLUMES_NAME = tomap(jsondecode(var.PERSISTENT_VOLUMES_NAME))
+  #PRIVATE_NETWORK         = var.PRIVATE_NETWORK
+  #SECGROUP_NAME           = var.SECGROUP_NAME
+  #INSTANCE_PATH           = var.INSTANCE_PATH
+  SSH_AUTHORIZED_KEYS_DIR = var.SSH_AUTHORIZED_KEYS_DIR
+  SSH_HOST_KEYS_DIR       = var.SSH_HOST_KEYS_DIR
+}

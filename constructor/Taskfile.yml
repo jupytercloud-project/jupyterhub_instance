@@ -1,0 +1,71 @@
+version: '3'
+
+tasks:
+
+  default:
+    desc: list tasks
+    silent: true
+    cmds:
+    - task --list 
+
+  run_tf_command:
+    cmds:
+    - |
+      pkgx +gnu.org/coreutils env \
+           --split-string \
+           --ignore-environment \
+           USER="${USER}" \
+           HOME="${HOME}" \
+           CONSTRUCTOR_SSH_KEY_PATH="${CONSTRUCTOR_SSH_KEY_PATH}" \
+           PATH="${HOME}/.pkgx/bin:/bin:/usr/bin:/usr/local/bin" \
+           pkgx +gnu.org/bash^5 bash \
+                --login \
+                --noprofile \
+                --norc \
+                - <<'EOF'
+        eval "$(pkgx --shellcode)" 2&>1 /dev/null
+        source ../Taskfile.env
+        eval "$(ssh-agent)"
+        ssh-add "${CONSTRUCTOR_SSH_KEY_PATH}"
+        terraform {{ .TF_COMMAND }} {{ .CLI_ARGS }}
+      EOF
+
+  deploy:
+    desc: deploy infrastructures (add "-- -auto-approve" to run)
+    deps:
+    - task: run_tf_command
+      vars: 
+        TF_COMMAND: apply
+
+  destroy:
+    desc: destroy infrastructures (add "-- -auto-approve" to run)
+    deps:
+    - task: run_tf_command
+      vars: 
+        TF_COMMAND: destroy
+
+  plan:
+    desc: get remote_fqdn
+    deps:
+    - task: run_tf_command
+      vars: 
+        TF_COMMAND: plan
+
+  get_remote_fqdn:
+    desc: get remote_fqdn
+    deps:
+    - task: run_tf_command
+      vars: 
+        TF_COMMAND: output -raw REMOTE_FQDN
+
+  get_remote_user:
+    desc: get remote_fqdn
+    deps:
+    - task: run_tf_command
+      vars: 
+        TF_COMMAND: output -raw REMOTE_USER
+  
+  get_ssh_key_path:
+    desc: get ssh_key_path
+    cmds:
+      - printf '%s' "${CONSTRUCTOR_SSH_KEY_PATH}"
